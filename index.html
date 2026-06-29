@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Haze & Hue | Professional Dashboard</title>
+    <style>
+        /* CSS Variables for Dynamic Styling */
+        :root {
+            --bg-dark: linear-gradient(45deg, #0f0f1a, #252545, #1a1a2e);
+            --bg-light: linear-gradient(45deg, #e0f7fa, #b3e5fc, #81d4fa);
+            --text-color: #ffffff; /* Default for Dark Mode */
+        }
+        
+        body { 
+            margin: 0; font-family: 'Segoe UI', sans-serif; height: 100vh;
+            background: var(--bg-dark); background-size: 400% 400%; 
+            animation: gradientBG 15s ease infinite;
+            display: flex; justify-content: center; align-items: center; 
+            color: var(--text-color); transition: 0.5s;
+        }
+
+        /* Light Mode Classes */
+        body.light-mode { background: var(--bg-light); color: #000000; }
+        
+        /* Text Size Adjustments */
+        h1, h2, h3, .box, .history-item { font-size: 1.2rem; }
+        #temp { font-size: 3rem; }
+
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        #theme-toggle { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 30px; background: none; border: none; }
+
+        .main-wrapper { 
+            display: flex; gap: 20px; background: rgba(255, 255, 255, 0.1); 
+            padding: 30px; border-radius: 30px; backdrop-filter: blur(15px);
+        }
+
+        .dashboard, .history { width: 350px; text-align: center; }
+        .logo { width: 100%; border-radius: 20px; margin-bottom: 10px; }
+        
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; }
+        
+        .history-item { 
+            background: rgba(0,0,0,0.1); padding: 12px; margin: 8px 0; border-radius: 10px; 
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+
+    <button id="theme-toggle" onclick="document.body.classList.toggle('light-mode')">🌓</button>
+
+    <div class="main-wrapper">
+        <div class="dashboard">
+            <img src="logo.png" class="logo" alt="Haze & Hue Logo">
+            <h2>Haze & Hue</h2>
+            <input type="text" id="city" placeholder="Enter city...">
+            <button onclick="getWeather()">Check</button>
+            <div id="result">
+                <h2 id="city-name">--</h2>
+                <h1 id="temp">--°C</h1>
+                <div class="data-grid">
+                    <div class="box">💧 Humidity<br><span id="humidity">--</span></div>
+                    <div class="box">🌬️ Wind<br><span id="wind">--</span></div>
+                    <div class="box">🌅 Sunrise<br><span id="sunrise">--</span></div>
+                    <div class="box">🌇 Sunset<br><span id="sunset">--</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history">
+            <h3>History</h3>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        async function getWeather() {
+            const city = document.getElementById('city').value;
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=3668c5f697ff33f4b6a092817ab7f533`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if(res.ok) {
+                document.getElementById('city-name').innerText = data.name;
+                document.getElementById('temp').innerText = Math.round(data.main.temp) + "°C";
+                document.getElementById('humidity').innerText = data.main.humidity + "%";
+                document.getElementById('wind').innerText = data.wind.speed + " m/s";
+                document.getElementById('sunrise').innerText = new Date(data.sys.sunrise * 1000).toLocaleTimeString([], {timeStyle: 'short'});
+                document.getElementById('sunset').innerText = new Date(data.sys.sunset * 1000).toLocaleTimeString([], {timeStyle: 'short'});
+                
+                let hist = JSON.parse(localStorage.getItem('wHistory') || '[]');
+                if(!hist.includes(data.name)) {
+                    hist.unshift(data.name);
+                    localStorage.setItem('wHistory', JSON.stringify(hist.slice(0, 5)));
+                    renderHistory();
+                }
+            }
+        }
+        function renderHistory() {
+            document.getElementById('history-list').innerHTML = JSON.parse(localStorage.getItem('wHistory') || '[]')
+                .map(c => `<div class="history-item" onclick="document.getElementById('city').value='${c}';getWeather()">${c}</div>`).join('');
+        }
+        renderHistory();
+    </script>
+</body>
+</html>
