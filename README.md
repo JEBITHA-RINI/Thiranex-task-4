@@ -1,6 +1,6 @@
 # **Haze & Hue** 🌤️
 
-**Haze & Hue** is a **  real-time Weather Dashboard** designed to provide accurate meteorological data through a visually analysis, user-centric interface.
+**Haze & Hue** is a "real-time Weather Dashboard", designed to provide accurate meteorological data through a visually analysis, user-centric interface.
 
 ## 🚀 **Key Features**
 
